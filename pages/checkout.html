@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Checkout — Fragancia &amp; Estilo</title>
+  <link rel="stylesheet" href="../css/global.css"/>
+  <link rel="stylesheet" href="../css/checkout.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <nav class="navbar scrolled" id="navbar">
+    <div class="nav-logo"><a href="../index.html">
+      <span class="logo-main">Fragancia</span><span class="logo-amp">&amp;</span><span class="logo-sub">Estilo</span>
+    </a></div>
+    <ul class="nav-links">
+      <li><a href="../index.html">Inicio</a></li>
+      <li><a href="tienda.html">Tienda</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="cart-btn" onclick="history.back()">← Volver</button>
+    </div>
+  </nav>
+
+  <main class="checkout-layout">
+
+    <!-- Formulario -->
+    <section class="checkout-form-section">
+      <div class="checkout-step">
+        <span class="step-num">01</span>
+        <h2>Datos de Envío</h2>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Nombre *</label>
+          <input type="text" placeholder="Tu nombre"/>
+        </div>
+        <div class="form-group">
+          <label>Apellidos *</label>
+          <input type="text" placeholder="Tus apellidos"/>
+        </div>
+        <div class="form-group full">
+          <label>Correo electrónico *</label>
+          <input type="email" placeholder="tu@correo.com"/>
+        </div>
+        <div class="form-group">
+          <label>Teléfono *</label>
+          <input type="tel" placeholder="+52 81 1234 5678"/>
+        </div>
+        <div class="form-group">
+          <label>Estado *</label>
+          <input type="text" placeholder="Nuevo León"/>
+        </div>
+        <div class="form-group full">
+          <label>Dirección *</label>
+          <input type="text" placeholder="Calle, número, colonia"/>
+        </div>
+        <div class="form-group">
+          <label>Ciudad *</label>
+          <input type="text" placeholder="Monterrey"/>
+        </div>
+        <div class="form-group">
+          <label>Código Postal *</label>
+          <input type="text" placeholder="64000"/>
+        </div>
+      </div>
+
+      <div class="checkout-step" style="margin-top:48px">
+        <span class="step-num">02</span>
+        <h2>Pago</h2>
+      </div>
+
+      <!-- Opciones de pago -->
+      <div class="payment-options">
+        <label class="payment-option active" id="opt-stripe">
+          <input type="radio" name="payment" value="stripe" checked hidden/>
+          <div class="payment-option-inner">
+            <span class="payment-icon">💳</span>
+            <div>
+              <strong>Tarjeta de Crédito / Débito</strong>
+              <span>Visa, MasterCard, AMEX</span>
+            </div>
+          </div>
+        </label>
+        <label class="payment-option" id="opt-paypal">
+          <input type="radio" name="payment" value="paypal" hidden/>
+          <div class="payment-option-inner">
+            <span class="payment-icon">🅿</span>
+            <div>
+              <strong>PayPal</strong>
+              <span>Paga de forma segura con PayPal</span>
+            </div>
+          </div>
+        </label>
+        <label class="payment-option" id="opt-transfer">
+          <input type="radio" name="payment" value="transfer" hidden/>
+          <div class="payment-option-inner">
+            <span class="payment-icon">🏦</span>
+            <div>
+              <strong>Transferencia Bancaria</strong>
+              <span>SPEI · CLABE</span>
+            </div>
+          </div>
+        </label>
+      </div>
+
+      <!-- Formulario de tarjeta (simplificado; conectar con Stripe.js real) -->
+      <div class="card-form" id="cardForm">
+        <div class="form-group full">
+          <label>Número de tarjeta</label>
+          <input type="text" placeholder="1234 5678 9012 3456" maxlength="19"/>
+        </div>
+        <div class="form-group">
+          <label>Fecha de vencimiento</label>
+          <input type="text" placeholder="MM/AA" maxlength="5"/>
+        </div>
+        <div class="form-group">
+          <label>CVV</label>
+          <input type="text" placeholder="123" maxlength="4"/>
+        </div>
+        <div class="form-group full">
+          <label>Nombre en la tarjeta</label>
+          <input type="text" placeholder="Como aparece en tu tarjeta"/>
+        </div>
+      </div>
+
+      <!-- Aviso Stripe -->
+      <p class="secure-note">🔒 Pagos procesados de forma segura. Integra tu cuenta de <strong>Stripe</strong> o <strong>PayPal</strong> en <code>js/payment.js</code> para activar cobros reales.</p>
+
+      <button class="btn-gold" style="width:100%;margin-top:24px;padding:18px" onclick="placeOrder()">
+        Confirmar Pedido
+      </button>
+    </section>
+
+    <!-- Resumen del pedido -->
+    <aside class="order-summary">
+      <h3>Tu Pedido</h3>
+      <div id="summaryItems"></div>
+      <div class="summary-divider"></div>
+      <div class="summary-row">
+        <span>Subtotal</span>
+        <span id="summarySubtotal">$0.00</span>
+      </div>
+      <div class="summary-row">
+        <span>Envío</span>
+        <span class="shipping-note">Calculado al confirmar</span>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-row total">
+        <span>Total estimado</span>
+        <span id="summaryTotal">$0.00</span>
+      </div>
+      <div class="summary-secure">
+        <span>✦</span> Compra 100% segura y garantizada
+      </div>
+    </aside>
+  </main>
+
+  <!-- Modal de confirmación -->
+  <div class="modal-overlay" id="confirmModal" style="display:none">
+    <div class="modal-box">
+      <div class="modal-icon">✦</div>
+      <h3>¡Pedido Recibido!</h3>
+      <p>Gracias por tu compra. Recibirás una confirmación en tu correo en breve.</p>
+      <a href="../index.html" class="btn-gold" style="margin-top:24px">Volver al Inicio</a>
+    </div>
+  </div>
+
+  <script src="../js/cart.js"></script>
+  <script>
+    // Rellenar resumen con el carrito
+    document.addEventListener('DOMContentLoaded', () => {
+      const cart = JSON.parse(localStorage.getItem('fye_cart') || '[]');
+      const items = document.getElementById('summaryItems');
+      const subtotal = cart.reduce((s,i) => s + i.price * i.qty, 0);
+      items.innerHTML = cart.map(i => `
+        <div class="summary-item">
+          <span>${i.name} <em style="color:var(--gray-lt);font-size:.75rem">× ${i.qty}</em></span>
+          <span>$${(i.price * i.qty).toFixed(2)}</span>
+        </div>`).join('') || '<p style="color:var(--gray-lt);font-size:.8rem">Sin productos</p>';
+      document.getElementById('summarySubtotal').textContent = `$${subtotal.toFixed(2)} USD`;
+      document.getElementById('summaryTotal').textContent = `$${subtotal.toFixed(2)} USD`;
+    });
+
+    // Selección de método de pago
+    document.querySelectorAll('.payment-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('active'));
+        opt.classList.add('active');
+        document.getElementById('cardForm').style.display =
+          opt.querySelector('input').value === 'stripe' ? 'grid' : 'none';
+      });
+    });
+
+    function placeOrder() {
+      // Aquí conectarías con Stripe, PayPal o tu pasarela real
+      document.getElementById('confirmModal').style.display = 'flex';
+      localStorage.removeItem('fye_cart');
+    }
+  </script>
+</body>
+</html>
