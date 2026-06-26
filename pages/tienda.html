@@ -105,28 +105,29 @@
     }
 
     function renderGrid(products) {
-      const grid = document.getElementById('productsGrid');
-      const count = document.getElementById('resultsCount');
-      if (count) count.textContent = products.length + ' fragancia' + (products.length !== 1 ? 's' : '');
-      if (!products.length) {
-        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px 0"><p style="color:var(--gray-lt);font-size:.8rem;letter-spacing:.1em">No hay productos en esta categoría.</p></div>';
-        return;
-      }
-      grid.innerHTML = products.map(p => {
-        const precioPrev = p.precio_anterior ? '<span class="product-price-old">$' + Number(p.precio_anterior).toFixed(2) + '</span>' : '';
-        const badge = p.oferta ? '<span class="product-badge">Oferta</span>' : '';
-        const imgHtml = p.imagen
-          ? '<img src="' + p.imagen + '" alt="' + p.nombre + '" loading="lazy" onerror="this.style.display='none'">'
-          : '<div class="product-img-placeholder">✦</div>';
-        const addData = JSON.stringify({id:p.id,name:p.nombre,brand:p.marca,size:p.ml+'ml',price:p.precio,image:p.imagen||''}).replace(/'/g,"&#39;");
-        return '<div class="product-card"><div class="product-img-wrap">' + imgHtml + '</div>' + badge +
-          '<div class="product-info"><span class="product-brand">' + p.marca + '</span>' +
-          '<h3 class="product-name">' + p.nombre + '</h3>' +
-          '<span class="product-size">' + p.ml + 'ml</span>' +
-          '<div class="product-price-row"><span class="product-price">$' + Number(p.precio).toFixed(2) + '</span>' + precioPrev + '</div>' +
-          '<button class="product-add-btn" onclick='CartAPI.addToCart(' + addData + ')'>Añadir al carrito</button></div></div>';
-      }).join('');
-    }
+    grid.innerHTML = products.map(p => {
+        const addData = JSON.stringify({id:p.id, name:p.nombre, brand:p.marca, size:p.ml+' ml', price:p.precio, image:p.imagen||''}).replace(/'/g, "&apos;");
+        
+        // Usamos backticks (`) al inicio y al final para poder meter comillas normales adentro
+        return `
+            <div class="product-card">
+                <div class="product-img-wrap">${imgHtml}</div>
+                ${badge}
+                <div class="product-info">
+                    <span class="product-brand">${p.marca}</span>
+                    <h3 class="product-name">${p.nombre}</h3>
+                    <span class="product-size">${p.ml} ml</span>
+                    <div class="product-price-row">
+                        <span class="product-price">$${Number(p.precio).toFixed(2)}</span>
+                        ${precioPrev}
+                    </div>
+                    <!-- Se corrige el onclick escapando el JSON correctamente -->
+                    <button class="product-add-btn" onclick="CartAPI.addToCart('${addData}')">Añadir al carrito</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
 
     document.querySelectorAll('.filter-btn').forEach(btn => {
       btn.addEventListener('click', () => {
