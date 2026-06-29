@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Checkout — Fragancia &amp; Estilo</title>
+  <link rel="stylesheet" href="../css/global.css"/>
+  <link rel="stylesheet" href="../css/checkout.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ── Métodos de pago ── */
+    .payment-methods { display:flex; flex-direction:column; gap:10px; margin-bottom:20px }
+    .pm-option {
+      border:1px solid rgba(201,168,76,.15); cursor:pointer;
+      transition:border-color .28s ease, background .28s ease;
+    }
+    .pm-option.active { border-color:var(--gold); background:rgba(201,168,76,.04) }
+    .pm-option-inner {
+      display:flex; align-items:center; gap:18px; padding:16px 20px;
+    }
+    .pm-icon { font-size:1.5rem; flex-shrink:0; width:36px; text-align:center }
+    .pm-label strong { display:block; font-family:var(--font-display); font-size:1.05rem; font-weight:400; color:var(--cream) }
+    .pm-label span { font-size:.7rem; color:var(--gray-lt); letter-spacing:.05em }
+    .pm-badge {
+      margin-left:auto; font-size:.6rem; letter-spacing:.1em; text-transform:uppercase;
+      padding:3px 9px; border:1px solid rgba(201,168,76,.3); color:var(--gold-dk)
+    }
+    .pm-badge.popular { background:rgba(201,168,76,.12); color:var(--gold) }
+
+    /* ── Paneles de pago ── */
+    .pay-panel { display:none; margin-top:4px }
+    .pay-panel.active { display:block }
+
+    /* ── Stripe card element ── */
+    #stripe-card-element {
+      background:var(--black3); border:1px solid rgba(201,168,76,.2);
+      padding:14px 16px; transition:border-color .28s;
+    }
+    #stripe-card-element.StripeElement--focus { border-color:var(--gold) }
+    #stripe-card-error { color:#e07070; font-size:.72rem; margin-top:6px; min-height:18px }
+
+    /* ── PayPal container ── */
+    #paypal-button-container { margin-top:4px }
+
+    /* ── Mercado Pago container ── */
+    #mp-card-element { margin-top:4px }
+
+    /* ── Transferencia bancaria ── */
+    .bank-info {
+      background:var(--black3); border:1px solid rgba(201,168,76,.15);
+      padding:20px; display:flex; flex-direction:column; gap:14px
+    }
+    .bank-row { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px }
+    .bank-row .bank-lbl { font-size:.62rem; letter-spacing:.14em; text-transform:uppercase; color:var(--gray-lt) }
+    .bank-row .bank-val { font-family:var(--font-display); font-size:1.05rem; color:var(--cream) }
+    .bank-row .bank-val.clabe { font-size:.9rem; letter-spacing:.08em; color:var(--gold) }
+    .copy-btn {
+      background:none; border:1px solid rgba(201,168,76,.2); color:var(--gold-dk);
+      font-size:.6rem; letter-spacing:.1em; text-transform:uppercase;
+      padding:4px 10px; cursor:pointer; transition:.25s ease
+    }
+    .copy-btn:hover { border-color:var(--gold); color:var(--gold) }
+    .bank-note {
+      font-size:.72rem; color:var(--gray-lt); line-height:1.7;
+      border-top:1px solid rgba(255,255,255,.05); padding-top:12px
+    }
+
+    /* ── Botón de pago ── */
+    .btn-pay {
+      width:100%; padding:18px; background:var(--gold); border:1px solid var(--gold);
+      color:var(--black); font-family:var(--font-body); font-size:.78rem; font-weight:500;
+      letter-spacing:.2em; text-transform:uppercase; cursor:pointer;
+      transition:.3s ease; position:relative; overflow:hidden; margin-top:20px
+    }
+    .btn-pay:hover { background:transparent; color:var(--gold) }
+    .btn-pay:disabled { opacity:.5; pointer-events:none }
+    .btn-pay.loading { color:transparent; pointer-events:none }
+    .btn-pay.loading::after {
+      content:''; position:absolute; width:20px; height:20px;
+      border:2px solid rgba(0,0,0,.3); border-top-color:var(--black);
+      border-radius:50%; animation:spin .7s linear infinite;
+      top:50%; left:50%; transform:translate(-50%,-50%)
+    }
+    @keyframes spin { to { transform:translate(-50%,-50%) rotate(360deg) } }
+
+    /* ── Mensaje de pago ── */
+    .payment-msg { padding:12px 16px; font-size:.75rem; margin-top:12px; display:none }
+    .payment-msg-error { background:rgba(192,57,43,.12); border:1px solid rgba(192,57,43,.3); color:#e07070 }
+    .payment-msg-info  { background:rgba(201,168,76,.08); border:1px solid rgba(201,168,76,.2); color:var(--gold-lt) }
+    .payment-msg-ok    { background:rgba(45,106,79,.12); border:1px solid rgba(45,106,79,.3); color:#68c19a }
+
+    /* ── Sin pasarelas configuradas ── */
+    .no-gateway-notice {
+      background:rgba(201,168,76,.06); border:1px solid rgba(201,168,76,.2);
+      padding:20px; text-align:center; display:none
+    }
+    .no-gateway-notice.show { display:block }
+    .no-gateway-notice p { font-size:.8rem; color:var(--gray-lt); line-height:1.8 }
+    .no-gateway-notice strong { color:var(--gold) }
+
+    /* ── Lock badge ── */
+    .secure-badge {
+      display:flex; align-items:center; gap:8px; justify-content:center;
+      font-size:.65rem; letter-spacing:.1em; text-transform:uppercase;
+      color:var(--gray-lt); margin-top:16px
+    }
+    .secure-badge::before { content:'🔒' }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar scrolled" id="navbar">
+    <div class="nav-logo"><a href="../index.html">
+      <span class="logo-main">Fragancia</span><span class="logo-amp">&amp;</span><span class="logo-sub">Estilo</span>
+    </a></div>
+    <ul class="nav-links">
+      <li><a href="../index.html">Inicio</a></li>
+      <li><a href="tienda.html">Tienda</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="tienda.html" style="font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gray-lt)">← Seguir comprando</a>
+    </div>
+  </nav>
+
+  <main class="checkout-layout">
+
+    <!-- ── FORMULARIO ── -->
+    <section class="checkout-form-section">
+
+      <!-- PASO 1: Datos -->
+      <div class="checkout-step">
+        <span class="step-num">01</span>
+        <h2>Datos de Envío</h2>
+      </div>
+      <div class="form-grid">
+        <div class="form-group"><label>Nombre *</label><input type="text" id="firstName" placeholder="Tu nombre" required/></div>
+        <div class="form-group"><label>Apellidos *</label><input type="text" id="lastName" placeholder="Tus apellidos" required/></div>
+        <div class="form-group full"><label>Correo electrónico *</label><input type="email" id="email" placeholder="tu@correo.com" required/></div>
+        <div class="form-group"><label>Teléfono *</label><input type="tel" id="phone" placeholder="+52 81 1234 5678" required/></div>
+        <div class="form-group"><label>Estado *</label><input type="text" id="state" placeholder="Nuevo León" required/></div>
+        <div class="form-group full"><label>Dirección *</label><input type="text" id="address" placeholder="Calle, número, colonia" required/></div>
+        <div class="form-group"><label>Ciudad *</label><input type="text" id="city" placeholder="Monterrey" required/></div>
+        <div class="form-group"><label>Código Postal *</label><input type="text" id="zip" placeholder="64000" maxlength="5" required/></div>
+      </div>
+
+      <!-- PASO 2: Pago -->
+      <div class="checkout-step" style="margin-top:44px">
+        <span class="step-num">02</span>
+        <h2>Método de Pago</h2>
+      </div>
+
+      <!-- Aviso si no hay pasarelas configuradas -->
+      <div class="no-gateway-notice" id="noGatewayNotice">
+        <p>
+          <strong>Pagos aún no activados</strong><br/>
+          Para recibir pagos con tarjeta necesitas configurar Stripe, PayPal o Mercado Pago.<br/>
+          Consulta la sección <strong>"Configurar Pagos"</strong> de la guía de operación,<br/>
+          o utiliza la transferencia bancaria mientras tanto.
+        </p>
+      </div>
+
+      <div class="payment-methods" id="paymentMethods">
+        <!-- Se rellena dinámicamente según las claves configuradas -->
+      </div>
+
+      <!-- Panel: Stripe -->
+      <div class="pay-panel" id="panel-stripe">
+        <div class="form-group full" style="margin-bottom:14px">
+          <label>Número de tarjeta</label>
+          <div id="stripe-card-element"></div>
+          <div id="stripe-card-error"></div>
+        </div>
+        <div class="form-group full">
+          <label>Nombre en la tarjeta</label>
+          <input type="text" id="cardName" placeholder="Exactamente como aparece en la tarjeta"/>
+        </div>
+      </div>
+
+      <!-- Panel: PayPal -->
+      <div class="pay-panel" id="panel-paypal">
+        <div id="paypal-button-container"></div>
+      </div>
+
+      <!-- Panel: Mercado Pago -->
+      <div class="pay-panel" id="panel-mp">
+        <div id="mp-card-element"></div>
+      </div>
+
+      <!-- Panel: Transferencia SPEI -->
+      <div class="pay-panel" id="panel-bank">
+        <div class="bank-info" id="bankInfo">
+          <!-- Se rellena con JS -->
+        </div>
+      </div>
+
+      <!-- Mensaje de estado del pago -->
+      <div id="payment-message" class="payment-msg"></div>
+
+      <!-- Botón de pago -->
+      <button class="btn-pay" id="payBtn" onclick="submitPayment()">
+        Confirmar y Pagar
+      </button>
+      <div class="secure-badge">Pago 100% seguro y encriptado</div>
+
+    </section>
+
+    <!-- ── RESUMEN ── -->
+    <aside class="order-summary">
+      <h3>Tu Pedido</h3>
+      <div id="summaryItems"></div>
+      <div class="summary-divider"></div>
+      <div class="summary-row"><span>Subtotal</span><span id="summarySubtotal">$0.00</span></div>
+      <div class="summary-row"><span>Envío</span><span style="color:var(--gray);font-size:.7rem">Se coordina por WhatsApp</span></div>
+      <div class="summary-divider"></div>
+      <div class="summary-row total"><span>Total</span><span id="summaryTotal">$0.00</span></div>
+      <div class="summary-secure"><span>✦</span> Garantía de compra segura</div>
+
+      <!-- WhatsApp de respaldo -->
+      <div style="margin-top:24px;padding-top:20px;border-top:1px solid rgba(201,168,76,.1)">
+        <p style="font-size:.68rem;color:var(--gray-lt);line-height:1.8;margin-bottom:12px">
+          ¿Prefieres ordenar por WhatsApp?
+        </p>
+        <a id="waLink" href="#" target="_blank"
+           style="display:flex;align-items:center;gap:8px;font-size:.72rem;
+                  letter-spacing:.08em;color:var(--gold-lt);border:1px solid rgba(201,168,76,.2);
+                  padding:10px 14px;transition:.28s ease"
+           onmouseover="this.style.borderColor='var(--gold)'"
+           onmouseout="this.style.borderColor='rgba(201,168,76,.2)'">
+          💬 Ordenar por WhatsApp
+        </a>
+      </div>
+    </aside>
+  </main>
+
+  <script src="../data/config.js"></script>
+  <script src="../js/db.js"></script>
+  <script src="../js/cart.js"></script>
+  <script src="../js/payment.js"></script>
+  <script>
+  // ═══════════════════════════════════════
+  //  CHECKOUT — lógica de la página
+  // ═══════════════════════════════════════
+
+  let stripeInstance = null;
+  let activeMethod   = null;
+  const cartItems    = JSON.parse(localStorage.getItem('fye_cart') || '[]');
+  const total        = cartItems.reduce((s, i) => s + i.price * i.qty, 0);
+
+  // ── Construir resumen ──────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    // Resumen de pedido
+    const itemsEl = document.getElementById('summaryItems');
+    itemsEl.innerHTML = cartItems.length
+      ? cartItems.map(i => `
+          <div class="summary-item">
+            <span>${i.name} <em style="color:var(--gray-lt);font-size:.72rem">× ${i.qty}</em></span>
+            <span>$${(i.price * i.qty).toFixed(2)}</span>
+          </div>`).join('')
+      : '<p style="color:var(--gray-lt);font-size:.78rem">Sin productos</p>';
+
+    document.getElementById('summarySubtotal').textContent = '$' + total.toFixed(2);
+    document.getElementById('summaryTotal').textContent    = '$' + total.toFixed(2);
+
+    // WhatsApp link
+    const phone = PaymentConfig.bank.email_compras.includes('@')
+      ? '521234567890'  // fallback
+      : PaymentConfig.bank.email_compras;
+    const waText = encodeURIComponent(
+      'Hola, quiero hacer un pedido de:\n' +
+      cartItems.map(i => `• ${i.name} (${i.size}) × ${i.qty} = $${(i.price*i.qty).toFixed(2)}`).join('\n') +
+      `\n\nTotal: $${total.toFixed(2)}`
+    );
+    document.getElementById('waLink').href = `https://wa.me/${phone}?text=${waText}`;
+
+    // Renderizar métodos de pago
+    buildPaymentMethods();
+  });
+
+  // ── Construir botones de método de pago ──
+  function buildPaymentMethods() {
+    const container = document.getElementById('paymentMethods');
+    const methods   = [];
+
+    if (PaymentGateways.hasStripe()) {
+      methods.push({ id:'stripe', icon:'💳', label:'Tarjeta de Crédito / Débito', sub:'Visa, Mastercard, AMEX', badge:'', popular:false });
+    }
+    if (PaymentGateways.hasPayPal()) {
+      methods.push({ id:'paypal', icon:'🅿', label:'PayPal', sub:'Paga con tu cuenta PayPal', badge:'Popular', popular:true });
+    }
+    if (PaymentGateways.hasMercadoPago()) {
+      methods.push({ id:'mp', icon:'🟡', label:'Mercado Pago', sub:'Tarjeta, OXXO, transferencia', badge:'Popular', popular:true });
+    }
+    // SPEI/banco siempre disponible
+    methods.push({ id:'bank', icon:'🏦', label:'Transferencia SPEI', sub:'Banco → CLABE interbancaria', badge:'Sin comisión', popular:false });
+
+    if (methods.length <= 1) {
+      document.getElementById('noGatewayNotice').classList.add('show');
+    }
+
+    container.innerHTML = methods.map((m, i) => `
+      <div class="pm-option ${i===0?'active':''}" onclick="selectMethod('${m.id}')" id="opt-${m.id}">
+        <div class="pm-option-inner">
+          <div class="pm-icon">${m.icon}</div>
+          <div class="pm-label">
+            <strong>${m.label}</strong>
+            <span>${m.sub}</span>
+          </div>
+          ${m.badge ? `<span class="pm-badge ${m.popular?'popular':''}">${m.badge}</span>` : ''}
+        </div>
+      </div>`).join('');
+
+    // Activar el primero
+    if (methods.length > 0) selectMethod(methods[0].id);
+  }
+
+  // ── Seleccionar método de pago ─────────
+  async function selectMethod(id) {
+    activeMethod = id;
+
+    // UI: activar botón seleccionado
+    document.querySelectorAll('.pm-option').forEach(el => el.classList.remove('active'));
+    const optEl = document.getElementById('opt-' + id);
+    if (optEl) optEl.classList.add('active');
+
+    // UI: mostrar panel correcto
+    document.querySelectorAll('.pay-panel').forEach(el => el.classList.remove('active'));
+    const panelEl = document.getElementById('panel-' + id);
+    if (panelEl) panelEl.classList.add('active');
+
+    // Texto del botón
+    const payBtn = document.getElementById('payBtn');
+    if (id === 'bank')   { payBtn.textContent = 'Ver datos de transferencia'; }
+    else if (id === 'paypal') { payBtn.style.display = 'none'; }
+    else { payBtn.style.display = 'block'; payBtn.textContent = 'Confirmar y Pagar'; }
+
+    // Inicializar pasarela
+    if (id === 'stripe' && PaymentGateways.hasStripe() && !stripeInstance) {
+      stripeInstance = await initStripe(total);
+    }
+    if (id === 'paypal' && PaymentGateways.hasPayPal()) {
+      await initPayPal(total, 'paypal-button-container');
+    }
+    if (id === 'mp' && PaymentGateways.hasMercadoPago()) {
+      await initMercadoPago(total);
+    }
+    if (id === 'bank') {
+      renderBankInfo();
+    }
+  }
+
+  // ── Info de transferencia bancaria ─────
+  function renderBankInfo() {
+    const b = getBankInfo();
+    document.getElementById('bankInfo').innerHTML = `
+      <div class="bank-row">
+        <div><div class="bank-lbl">Banco</div><div class="bank-val">${b.banco}</div></div>
+      </div>
+      <div class="bank-row">
+        <div><div class="bank-lbl">Titular</div><div class="bank-val">${b.titular}</div></div>
+      </div>
+      <div class="bank-row">
+        <div><div class="bank-lbl">CLABE Interbancaria</div><div class="bank-val clabe">${b.clabe}</div></div>
+        <button class="copy-btn" onclick="copyText('${b.clabe}', this)">Copiar</button>
+      </div>
+      <div class="bank-row">
+        <div><div class="bank-lbl">Número de cuenta</div><div class="bank-val">${b.cuenta}</div></div>
+        <button class="copy-btn" onclick="copyText('${b.cuenta}', this)">Copiar</button>
+      </div>
+      <div class="bank-note">
+        📧 Envía tu comprobante de pago a <strong style="color:var(--cream)">${b.email}</strong>
+        con tu nombre y número de pedido. Procesamos en 24 horas hábiles.
+      </div>`;
+  }
+
+  function copyText(text, btn) {
+    navigator.clipboard.writeText(text);
+    const original = btn.textContent;
+    btn.textContent = '✓ Copiado';
+    setTimeout(() => btn.textContent = original, 1800);
+  }
+
+  // ── Validar formulario ─────────────────
+  function validateForm() {
+    const required = ['firstName','lastName','email','phone','state','address','city','zip'];
+    for (const id of required) {
+      const el = document.getElementById(id);
+      if (!el || !el.value.trim()) {
+        el.style.borderColor = '#e07070';
+        el.focus();
+        showPaymentMessage('Por favor completa todos los campos marcados con *.', 'error');
+        return false;
+      }
+      el.style.borderColor = '';
+    }
+    // Validar email
+    const email = document.getElementById('email').value;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showPaymentMessage('El correo electrónico no tiene un formato válido.', 'error');
+      document.getElementById('email').focus();
+      return false;
+    }
+    return true;
+  }
+
+  // ── Submit de pago ─────────────────────
+  async function submitPayment() {
+    if (!validateForm()) return;
+
+    const btn = document.getElementById('payBtn');
+
+    if (activeMethod === 'bank') {
+      // Transferencia: mostrar datos y mensaje
+      renderBankInfo();
+      showPaymentMessage('✦ Realiza tu transferencia a la CLABE indicada y envía tu comprobante. Te confirmaremos en 24 horas.', 'ok');
+      btn.textContent = '✦ Datos enviados';
+      btn.disabled = true;
+      // Enviar a WhatsApp con los datos del pedido
+      document.getElementById('waLink').click();
+      return;
+    }
+
+    if (activeMethod === 'stripe' && stripeInstance) {
+      btn.classList.add('loading');
+      try {
+        // ⚠️ Para cobros reales con Stripe necesitas un backend.
+        // Opciones simples: Stripe Payment Links (sin backend)
+        // o Netlify Functions (ver guía).
+        // Por ahora, redirige a un Stripe Payment Link si lo tienes:
+        const stripeLink = PaymentConfig.stripe_payment_link || '';
+        if (stripeLink) {
+          window.location.href = stripeLink + '?amount=' + Math.round(total * 100);
+          return;
+        }
+        // Demo si no hay link configurado:
+        await new Promise(r => setTimeout(r, 1500));
+        handlePaymentSuccess('stripe', 'demo-' + Date.now(), {});
+      } catch(e) {
+        btn.classList.remove('loading');
+        handlePaymentError('stripe', e.message);
+      }
+      return;
+    }
+  }
+  </script>
+</body>
+</html>

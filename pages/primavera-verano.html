@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Primavera · Verano — Fragancia &amp; Estilo</title>
+  <link rel="stylesheet" href="../css/global.css"/>
+  <link rel="stylesheet" href="../css/tienda.css"/>
+  <link rel="stylesheet" href="../css/coleccion.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar scrolled" id="navbar">
+    <div class="nav-logo"><a href="../index.html">
+      <span class="logo-main">Fragancia</span><span class="logo-amp">&amp;</span><span class="logo-sub">Estilo</span>
+    </a></div>
+    <ul class="nav-links">
+      <li><a href="../index.html">Inicio</a></li>
+      <li class="dropdown"><a href="#">Colecciones ▾</a>
+        <div class="dropdown-menu">
+          <a href="primavera-verano.html">Primavera · Verano</a>
+          <a href="otono-invierno.html">Otoño · Invierno</a>
+          <a href="hombre.html">Para Él</a>
+          <a href="mujer.html" class="active">Primavera · Verano</a>
+          <a href="unisex.html">Unisex</a>
+          <a href="noche.html">Noche &amp; Ocasión</a>
+        </div>
+      </li>
+      <li><a href="tienda.html">Tienda</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="cart-btn" onclick="toggleCart()">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        <span class="cart-count" id="cartCount">0</span>
+      </button>
+    </div>
+  </nav>
+
+  <header class="collection-hero" style="--hero-bg: linear-gradient(135deg, #0a1a10 0%, #0a0a0a 100%)">
+    <div class="collection-hero-content">
+      <span class="eyebrow-gold">Colección</span>
+      <h1>Primavera · <em>Verano</em></h1>
+      <p>Fragancias que celebran la Frescura, luz y flores en plena ebullición. Fragancias que capturan la esencia de los días luminosos.</p>
+    </div>
+    <div class="collection-hero-deco">
+      <div class="deco-circle"></div>
+      <div class="deco-line"></div>
+    </div>
+  </header>
+
+  <main class="products-grid" id="productsGrid"></main>
+
+  <footer class="footer">
+    <div class="footer-logo"><span>Fragancia</span><em> &amp; </em><span>Estilo</span></div>
+    <p class="footer-tagline">Perfumería de Lujo · Monterrey, México</p>
+    <p class="footer-copy">© 2025 Fragancia &amp; Estilo.</p>
+  </footer>
+
+  <div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+  <aside class="cart-panel" id="cartPanel">
+    <div class="cart-header"><h3>Tu Selección</h3><button onclick="toggleCart()" class="cart-close">✕</button></div>
+    <div class="cart-items" id="cartItems"><p class="cart-empty">Tu carrito está vacío</p></div>
+    <div class="cart-footer" id="cartFooter" style="display:none">
+      <div class="cart-total"><span>Total:</span><span id="cartTotal">$0.00</span></div>
+      <a href="checkout.html" class="btn-gold w-full">Proceder al pago</a>
+    </div>
+  </aside>
+
+  <script src="../data/config.js"></script>
+  <script src="../js/db.js"></script>
+  <script src="../js/cart.js"></script>
+  <script src="../js/products.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    // Cambia 'mujer' por la categoría de esta página
+    renderProductGrid('productsGrid', 'primavera-verano'');
+  </script>
+</body>
+</html>

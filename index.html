@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Panel Admin — Fragancia &amp; Estilo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --black:#080808;--black2:#101010;--black3:#181818;
+      --gold:#c9a84c;--gold-lt:#e4c97e;--gold-dk:#9e7a2a;
+      --cream:#f5f0e8;--cream2:#ede6d6;
+      --gray:#555;--gray-lt:#888;
+      --green-bg:rgba(45,106,79,.15);--green-bd:rgba(45,106,79,.4);--green-tx:#68c19a;
+      --red-bg:rgba(192,57,43,.12);--red-bd:rgba(192,57,43,.35);--red-tx:#e07070;
+      --font-d:'Cormorant Garamond',serif;
+      --font-b:'Montserrat',sans-serif;
+      --ease:cubic-bezier(0.4,0,0.2,1);
+      --tr:0.28s var(--ease);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{background:var(--black);color:var(--cream);font-family:var(--font-b);font-weight:300;display:flex;flex-direction:column;overflow:hidden}
+    a{color:inherit;text-decoration:none}
+    input,select,textarea{background:var(--black3);border:1px solid rgba(201,168,76,.2);color:var(--cream);font-family:var(--font-b);font-size:.85rem;padding:12px 14px;outline:none;width:100%;transition:border-color var(--tr)}
+    input:focus,select:focus,textarea:focus{border-color:var(--gold)}
+    input::placeholder,textarea::placeholder{color:var(--gray)}
+    select option{background:var(--black2)}
+    label{font-size:.63rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gray-lt);margin-bottom:6px;display:block}
+    button{cursor:pointer;font-family:var(--font-b)}
+    h1,h2,h3,h4{font-family:var(--font-d);font-weight:400}
+
+    /* ── SESSION BAR ── */
+    .sbar{background:var(--black2);border-bottom:1px solid rgba(201,168,76,.1);
+      padding:0 28px;height:48px;display:flex;align-items:center;justify-content:space-between;
+      font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;flex-shrink:0}
+    .sbar-user{color:var(--gold);display:flex;align-items:center;gap:8px}
+    .sbar-user::before{content:'◈'}
+    .sbar-right{display:flex;align-items:center;gap:20px;color:var(--gray-lt)}
+    .sbar-timer span{color:var(--cream)}
+    .btn-logout{background:none;border:1px solid rgba(201,168,76,.15);color:var(--gray-lt);
+      font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;padding:5px 14px;transition:var(--tr)}
+    .btn-logout:hover{border-color:var(--red-bd);color:var(--red-tx)}
+
+    /* ── LAYOUT ── */
+    .shell{display:flex;flex:1;overflow:hidden}
+
+    /* ── SIDEBAR ── */
+    .sidebar{width:220px;flex-shrink:0;background:var(--black2);
+      border-right:1px solid rgba(201,168,76,.1);display:flex;flex-direction:column;overflow-y:auto}
+    .sb-logo{padding:24px 20px 16px;border-bottom:1px solid rgba(201,168,76,.08)}
+    .sb-logo span{font-family:var(--font-d);font-size:1.05rem;line-height:1.25;display:block}
+    .sb-logo em{color:var(--gold);font-style:italic}
+    .sb-logo small{font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gray-lt);margin-top:3px;display:block}
+    .sb-nav{flex:1;padding:8px 0}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:11px 20px;
+      font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gray-lt);
+      transition:var(--tr);cursor:pointer;border-left:2px solid transparent;user-select:none}
+    .nav-item:hover{color:var(--cream);background:rgba(255,255,255,.02)}
+    .nav-item.active{color:var(--gold);border-left-color:var(--gold);background:rgba(201,168,76,.05)}
+    .nav-item .icon{font-size:.95rem;width:18px;text-align:center;flex-shrink:0}
+    .sb-foot{padding:16px 20px;border-top:1px solid rgba(201,168,76,.08)}
+    .sb-foot a{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gray-lt);transition:color var(--tr)}
+    .sb-foot a:hover{color:var(--gold)}
+
+    /* ── MAIN ── */
+    .main{flex:1;overflow-y:auto;padding:36px 5% 60px}
+    .pg{display:none}.pg.active{display:block}
+    .pg-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;flex-wrap:wrap;gap:12px}
+    .pg-head h1{font-size:2rem;color:var(--cream)}
+    .pg-head p{font-size:.75rem;color:var(--gray-lt);margin-top:4px}
+
+    /* ── BUTTONS ── */
+    .btn{display:inline-flex;align-items:center;gap:7px;padding:10px 22px;
+      font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;border:1px solid;transition:var(--tr);cursor:pointer}
+    .btn-gold{background:var(--gold);border-color:var(--gold);color:var(--black)}
+    .btn-gold:hover{background:transparent;color:var(--gold)}
+    .btn-outline{background:transparent;border-color:rgba(201,168,76,.3);color:var(--gold-lt)}
+    .btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+    .btn-danger{background:transparent;border-color:rgba(192,57,43,.35);color:var(--red-tx)}
+    .btn-danger:hover{background:var(--red-bg)}
+    .btn-sm{padding:7px 14px;font-size:.6rem}
+    .btn-xs{padding:5px 10px;font-size:.58rem}
+    .btn:disabled{opacity:.4;pointer-events:none}
+
+    /* ── PANELS ── */
+    .panel{background:var(--black2);border:1px solid rgba(201,168,76,.1);padding:24px;margin-bottom:20px}
+    .panel-title{font-family:var(--font-d);font-size:1.15rem;color:var(--gold);
+      margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid rgba(201,168,76,.1)}
+
+    /* ── STATS ── */
+    .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:24px}
+    .stat{background:var(--black2);border:1px solid rgba(201,168,76,.1);padding:20px}
+    .stat-val{font-family:var(--font-d);font-size:2rem;color:var(--gold);line-height:1}
+    .stat-lbl{font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gray-lt);margin-top:6px}
+
+    /* ── TABLE ── */
+    .tbl{width:100%;border-collapse:collapse}
+    .tbl th{text-align:left;font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;
+      color:var(--gray-lt);padding:10px 12px;border-bottom:1px solid rgba(201,168,76,.1)}
+    .tbl td{padding:12px;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;vertical-align:middle}
+    .tbl tr:hover td{background:rgba(255,255,255,.015)}
+    .tbl-thumb{width:48px;height:56px;object-fit:cover;background:var(--black3);display:block}
+    .tbl-thumb-ph{width:48px;height:56px;background:var(--black3);display:flex;align-items:center;justify-content:center;color:var(--gold-dk);font-size:1.1rem}
+    .pname .brand{font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:2px}
+    .pname .name{font-family:var(--font-d);font-size:.95rem;color:var(--cream)}
+    .pill{display:inline-block;padding:3px 9px;font-size:.57rem;letter-spacing:.1em;text-transform:uppercase;border:1px solid}
+    .pill-ok{background:var(--green-bg);color:var(--green-tx);border-color:var(--green-bd)}
+    .pill-off{background:var(--red-bg);color:var(--red-tx);border-color:var(--red-bd)}
+    .pill-offer{background:rgba(201,168,76,.12);color:var(--gold);border-color:rgba(201,168,76,.3)}
+    .price-cell{font-family:var(--font-d);font-size:1.05rem;color:var(--gold)}
+    .acts{display:flex;gap:6px}
+
+    /* ── FORM ── */
+    .frow{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+    .frow.three{grid-template-columns:1fr 1fr 1fr}
+    .frow.one{grid-template-columns:1fr}
+    .fg{display:flex;flex-direction:column;gap:5px}
+    .fg.full{grid-column:1/-1}
+    .fg input,.fg select,.fg textarea{margin:0}
+    .cb-row{display:flex;align-items:center;gap:10px;margin-top:4px}
+    .cb-row input[type=checkbox]{width:auto;padding:0;margin:0}
+    .cb-row span{font-size:.72rem;color:var(--gray-lt);letter-spacing:.06em}
+
+    /* ── IMAGE UPLOAD ── */
+    .img-drop{border:2px dashed rgba(201,168,76,.25);padding:36px 20px;text-align:center;
+      cursor:pointer;transition:var(--tr);position:relative;background:var(--black3)}
+    .img-drop:hover{border-color:var(--gold);background:rgba(201,168,76,.03)}
+    .img-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+    .img-drop .ico{font-size:2rem;color:var(--gold-dk);margin-bottom:10px}
+    .img-drop strong{color:var(--gold);font-size:.78rem;display:block;margin-bottom:6px}
+    .img-drop p{font-size:.7rem;color:var(--gray-lt)}
+    .img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin-top:14px}
+    .img-item{position:relative;height:100px;background:var(--black3);border:1px solid rgba(201,168,76,.15)}
+    .img-item img{width:100%;height:100%;object-fit:cover}
+    .img-del{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.8);border:none;
+      color:var(--red-tx);width:20px;height:20px;border-radius:50%;font-size:.65rem;
+      display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+    .img-main-tag{position:absolute;bottom:3px;left:3px;background:var(--gold);
+      color:var(--black);font-size:.52rem;letter-spacing:.08em;padding:2px 5px}
+
+    /* ── ALERT MESSAGES ── */
+    .alert{padding:12px 16px;font-size:.72rem;letter-spacing:.05em;margin-bottom:16px;display:none}
+    .alert.show{display:block}
+    .alert-err{background:var(--red-bg);border:1px solid var(--red-bd);color:var(--red-tx)}
+    .alert-ok{background:var(--green-bg);border:1px solid var(--green-bd);color:var(--green-tx)}
+    .alert-info{background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);color:var(--gold-lt)}
+
+    /* ── SETUP WIZARD ── */
+    .wizard{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:900;
+      display:flex;align-items:center;justify-content:center;padding:24px}
+    .wizard.hidden{display:none}
+    .wiz-box{background:var(--black2);border:1px solid rgba(201,168,76,.25);
+      width:100%;max-width:620px;max-height:90vh;overflow-y:auto;padding:48px 40px}
+    .wiz-step{display:none}.wiz-step.active{display:block}
+    .wiz-num{font-size:.6rem;letter-spacing:.2em;color:var(--gold-dk);text-transform:uppercase;margin-bottom:8px}
+    .wiz-title{font-family:var(--font-d);font-size:1.8rem;color:var(--cream);margin-bottom:12px}
+    .wiz-body{font-size:.8rem;color:var(--gray-lt);line-height:1.9;margin-bottom:24px}
+    .wiz-body strong{color:var(--cream)}
+    .wiz-body code{background:rgba(201,168,76,.12);color:var(--gold);padding:1px 6px;font-size:.75rem}
+    .wiz-img{width:100%;border:1px solid rgba(201,168,76,.15);margin:12px 0 20px;display:block}
+    .wiz-progress{display:flex;gap:8px;margin-bottom:32px}
+    .wiz-dot{width:8px;height:8px;background:rgba(201,168,76,.2);border-radius:50%;transition:var(--tr)}
+    .wiz-dot.done{background:var(--gold)}
+
+    /* ── LOADER OVERLAY ── */
+    .loader{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:800;
+      display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+    .loader.show{display:flex}
+    .spin{width:36px;height:36px;border:2px solid rgba(201,168,76,.2);
+      border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loader p{font-size:.75rem;letter-spacing:.12em;color:var(--gold-lt);text-transform:uppercase}
+
+    /* ── TOAST ── */
+    .toast{position:fixed;bottom:24px;right:24px;background:var(--black2);
+      border:1px solid var(--gold);padding:12px 20px;font-size:.75rem;
+      letter-spacing:.06em;z-index:9999;opacity:0;transform:translateY(6px);
+      transition:.3s var(--ease);pointer-events:none;max-width:360px}
+    .toast.show{opacity:1;transform:translateY(0)}
+
+    /* ── SYNC BANNER ── */
+    .sync-banner{
+      background:rgba(201,168,76,.08);border-bottom:1px solid rgba(201,168,76,.25);
+      padding:10px 28px;display:none;align-items:center;gap:16px;
+      font-size:.68rem;letter-spacing:.06em;color:var(--cream2);flex-shrink:0;
+    }
+    .sync-banner.show{display:flex}
+    .sync-banner strong{color:var(--gold)}
+    .sync-banner code{background:rgba(201,168,76,.15);color:var(--gold-lt);
+      padding:2px 7px;font-size:.65rem;letter-spacing:.04em}
+    .sync-banner .sync-steps{display:flex;gap:20px;flex:1;flex-wrap:wrap}
+    .sync-step{display:flex;align-items:center;gap:7px}
+    .sync-step-num{background:var(--gold);color:var(--black);
+      width:18px;height:18px;border-radius:50%;display:flex;align-items:center;
+      justify-content:center;font-size:.6rem;font-weight:600;flex-shrink:0}
+    .sync-dismiss{background:none;border:1px solid rgba(201,168,76,.2);
+      color:var(--gray-lt);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;
+      padding:5px 12px;cursor:pointer;transition:var(--tr);white-space:nowrap}
+    .sync-dismiss:hover{color:var(--gold);border-color:var(--gold)}
+
+    /* ── MODAL ── */
+    .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:700;
+      display:none;align-items:center;justify-content:center;padding:24px}
+    .modal-bg.open{display:flex}
+    .modal-box{background:var(--black2);border:1px solid rgba(201,168,76,.2);
+      width:100%;max-width:680px;max-height:90vh;overflow-y:auto;padding:36px}
+    .modal-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+    .modal-hd h3{font-family:var(--font-d);font-size:1.4rem;color:var(--gold)}
+    .modal-close{background:none;border:none;color:var(--gray-lt);font-size:1.1rem;cursor:pointer}
+    .modal-close:hover{color:var(--gold)}
+
+    /* ── PRICE TABLE ── */
+    .price-input{width:100px;padding:7px 9px;font-size:.8rem}
+    .price-changed{border-color:var(--gold)!important;background:rgba(201,168,76,.06)!important}
+
+    /* ── SETUP STEPS visual ── */
+    .steps-visual{display:flex;flex-direction:column;gap:18px;margin-bottom:0}
+    .sv-item{display:flex;gap:16px;align-items:flex-start}
+    .sv-num{flex-shrink:0;width:32px;height:32px;background:rgba(201,168,76,.1);
+      border:1px solid rgba(201,168,76,.3);display:flex;align-items:center;justify-content:center;
+      font-family:var(--font-d);font-size:1.1rem;color:var(--gold)}
+    .sv-text strong{display:block;color:var(--cream);font-size:.82rem;margin-bottom:3px}
+    .sv-text p{color:var(--gray-lt);font-size:.74rem;line-height:1.7}
+    .sv-text code{background:rgba(201,168,76,.1);color:var(--gold);padding:1px 5px;font-size:.7rem}
+
+    @media(max-width:768px){
+      .sidebar{display:none}
+      .frow{grid-template-columns:1fr}
+      .frow.three{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ SESSION BAR ══ -->
+<div class="sbar">
+  <div class="sbar-user" id="sbarUser">Cargando…</div>
+  <div class="sbar-right">
+    <div class="sbar-timer">Sesión: <span id="sbarTimer">—</span></div>
+    <button class="btn-logout" onclick="doLogout()">✕ Salir</button>
+  </div>
+</div>
+
+<!-- ══ SYNC BANNER — aparece cuando hay cambios pendientes de subir a GitHub ══ -->
+<div class="sync-banner" id="syncBanner">
+  <strong>⬆ Cambios guardados en la nube.</strong>
+  <div class="sync-steps">
+    <div class="sync-step">
+      <span class="sync-step-num">1</span>
+      <span>Abre la Terminal en VSCode</span>
+    </div>
+    <div class="sync-step">
+      <span class="sync-step-num">2</span>
+      <span>Escribe: <code>git add . && git commit -m "Actualizar" && git push</code></span>
+    </div>
+    <div class="sync-step">
+      <span class="sync-step-num">3</span>
+      <span>Presiona Enter — listo en 1 min</span>
+    </div>
+  </div>
+  <button class="sync-dismiss" onclick="document.getElementById('syncBanner').classList.remove('show')">Entendido ✕</button>
+</div>
+
+<!-- ══ SHELL ══ -->
+<div class="shell">
+
+<!-- ── SIDEBAR ── -->
+<nav class="sidebar">
+  <div class="sb-logo">
+    <span>Fragancia <em>&amp;</em> Estilo</span>
+    <small>Panel de Administración</small>
+  </div>
+  <div class="sb-nav">
+    <div class="nav-item active" onclick="go('dashboard')"><span class="icon">◈</span>Dashboard</div>
+    <div class="nav-item" onclick="go('productos')"><span class="icon">✦</span>Mis Productos</div>
+    <div class="nav-item" onclick="go('nuevo')"><span class="icon">＋</span>Agregar Producto</div>
+    <div class="nav-item" onclick="go('precios')"><span class="icon">◎</span>Cambiar Precios</div>
+    <div class="nav-item" onclick="go('excel')"><span class="icon">⊞</span>Subir Excel / CSV</div>
+    <div class="nav-item" onclick="go('ajustes')"><span class="icon">⚙</span>Datos de la Tienda</div>
+    <div class="nav-item" onclick="go('seguridad')"><span class="icon">◉</span>Contraseña</div>
+  </div>
+  <div class="sb-foot">
+    <a href="../index.html" target="_blank">← Ver mi tienda</a>
+  </div>
+</nav>
+
+<!-- ── MAIN ── -->
+<main class="main">
+
+  <!-- DASHBOARD -->
+  <section class="pg active" id="pg-dashboard">
+    <div class="pg-head">
+      <div><h1>Dashboard</h1><p>Vista general de tu tienda</p></div>
+      <button class="btn btn-outline btn-sm" onclick="refreshAll()">↺ Actualizar</button>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="panel">
+      <div class="panel-title">Productos publicados</div>
+      <table class="tbl">
+        <thead><tr>
+          <th></th><th>Producto</th><th>Categoría</th><th>Precio</th><th>Estado</th><th>Acciones</th>
+        </tr></thead>
+        <tbody id="dashTbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- MIS PRODUCTOS -->
+  <section class="pg" id="pg-productos">
+    <div class="pg-head">
+      <div><h1>Mis Productos</h1><p>Gestiona todo tu catálogo</p></div>
+      <button class="btn btn-gold" onclick="go('nuevo')">＋ Agregar Producto</button>
+    </div>
+    <div class="panel" style="padding:0;overflow:hidden">
+      <table class="tbl" id="prodTbl">
+        <thead><tr>
+          <th></th><th>Producto</th><th>Categoría</th><th>Precio</th><th>Estado</th><th>Acciones</th>
+        </tr></thead>
+        <tbody id="prodTbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- AGREGAR PRODUCTO -->
+  <section class="pg" id="pg-nuevo">
+    <div class="pg-head">
+      <div><h1 id="formHeading">Agregar Producto</h1><p>Completa el formulario y haz clic en Publicar</p></div>
+    </div>
+
+    <div id="fAlert" class="alert alert-err"></div>
+    <div id="fOk"    class="alert alert-ok"></div>
+
+    <!-- FOTOS -->
+    <div class="panel">
+      <div class="panel-title">📷 Foto del Producto</div>
+      <div class="img-drop" id="imgDrop">
+        <input type="file" id="imgFile" accept="image/*" multiple onchange="handleImgs(this)"/>
+        <div class="ico">📷</div>
+        <strong>Toca aquí para elegir una foto</strong>
+        <p>Selecciona desde tu galería o toma una foto. Formatos: JPG, PNG · Máximo 1 MB por foto</p>
+      </div>
+      <div class="img-grid" id="imgGrid"></div>
+      <div class="alert alert-info show" id="imgHint" style="margin-top:12px">
+        ✦ La primera foto será la imagen principal del producto. Puedes subir varias.
+      </div>
+    </div>
+
+    <!-- DATOS -->
+    <div class="panel">
+      <div class="panel-title">Información del Producto</div>
+      <div class="frow">
+        <div class="fg"><label>Marca *</label><input id="f-marca" placeholder="Ej: Chanel, Dior, YSL"/></div>
+        <div class="fg"><label>Nombre del Perfume *</label><input id="f-nombre" placeholder="Ej: Bleu de Chanel"/></div>
+      </div>
+      <div class="frow three">
+        <div class="fg">
+          <label>Tamaño (ml) *</label>
+          <select id="f-ml">
+            <option value="">Selecciona…</option>
+            <option value="30">30 ml</option>
+            <option value="50">50 ml</option>
+            <option value="75">75 ml</option>
+            <option value="100">100 ml</option>
+            <option value="125">125 ml</option>
+            <option value="150">150 ml</option>
+            <option value="200">200 ml</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Colección *</label>
+          <select id="f-cat">
+            <option value="">Selecciona…</option>
+            <option value="mujer">Para Ella</option>
+            <option value="hombre">Para Él</option>
+            <option value="unisex">Unisex</option>
+            <option value="noche">Noche &amp; Ocasión</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Temporada</label>
+          <select id="f-temp">
+            <option value="todos">Todo el año</option>
+            <option value="primavera-verano">Primavera · Verano</option>
+            <option value="otono-invierno">Otoño · Invierno</option>
+          </select>
+        </div>
+      </div>
+      <div class="frow one">
+        <div class="fg full"><label>Descripción (opcional)</label>
+          <textarea id="f-desc" rows="3" placeholder="Notas olfativas, ocasión, estilo…"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRECIO -->
+    <div class="panel">
+      <div class="panel-title">Precio y Disponibilidad</div>
+      <div class="frow three">
+        <div class="fg">
+          <label>Precio de Venta (USD) *</label>
+          <input type="number" id="f-precio" placeholder="49.95" step="0.01" min="0"/>
+        </div>
+        <div class="fg">
+          <label>Precio anterior (si tiene descuento)</label>
+          <input type="number" id="f-prev" placeholder="Dejar vacío si no aplica" step="0.01" min="0"/>
+        </div>
+        <div class="fg" style="justify-content:flex-end;padding-top:20px">
+          <div class="cb-row">
+            <input type="checkbox" id="f-oferta"/>
+            <span>Mostrar etiqueta "Oferta"</span>
+          </div>
+          <div class="cb-row" style="margin-top:10px">
+            <input type="checkbox" id="f-disp" checked/>
+            <span>Publicar en la tienda ahora</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-bottom:60px">
+      <button class="btn btn-gold" id="saveBtn" onclick="saveProduct()" style="padding:14px 36px;font-size:.75rem">
+        ✦ Publicar Producto
+      </button>
+      <button class="btn btn-outline" onclick="resetForm()">Cancelar</button>
+    </div>
+  </section>
+
+  <!-- CAMBIAR PRECIOS -->
+  <section class="pg" id="pg-precios">
+    <div class="pg-head">
+      <div><h1>Cambiar Precios</h1><p>Edita el precio de cada producto directamente aquí</p></div>
+      <button class="btn btn-gold" id="savePricesBtn" onclick="savePrices()" disabled>Guardar Cambios</button>
+    </div>
+    <div class="alert alert-info show" style="margin-bottom:20px">
+      ✦ Edita los precios en la tabla. Al terminar haz clic en <strong>Guardar Cambios</strong>.
+      Los cambios se aplican de inmediato en tu tienda.
+    </div>
+    <div id="pricesAlert" class="alert alert-err"></div>
+    <div class="panel" style="padding:0;overflow:hidden">
+      <table class="tbl">
+        <thead><tr>
+          <th>Producto</th><th>Marca</th><th>ml</th>
+          <th>Precio Actual</th><th>Precio Anterior</th><th>Oferta</th>
+        </tr></thead>
+        <tbody id="pricesTbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SUBIR EXCEL / CSV -->
+  <section class="pg" id="pg-excel">
+    <div class="pg-head">
+      <div><h1>Subir Excel / CSV</h1><p>Actualiza precios cargando un archivo de Excel</p></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Paso 1 — Descarga el catálogo actual</div>
+      <p style="font-size:.78rem;color:var(--gray-lt);line-height:1.9;margin-bottom:18px">
+        Descarga el listado de tus productos en formato Excel (CSV).
+        Ábrelo en Excel o Google Sheets, cambia los precios y vuelve a subirlo aquí.
+      </p>
+      <button class="btn btn-outline" onclick="downloadCSV()">⬇ Descargar Catálogo (.csv)</button>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Paso 2 — Sube el archivo actualizado</div>
+      <div class="img-drop">
+        <input type="file" id="csvFile" accept=".csv" onchange="handleCSV(this)"/>
+        <div class="ico">📊</div>
+        <strong>Toca aquí para elegir el archivo CSV</strong>
+        <p>Solo se aceptan archivos .csv (guarda como CSV desde Excel o Google Sheets)</p>
+      </div>
+      <div id="csvPreview" style="display:none;margin-top:20px">
+        <div class="alert alert-info show" id="csvInfo"></div>
+        <table class="tbl" style="margin-bottom:16px">
+          <thead><tr><th>Producto</th><th>Precio actual</th><th>Precio nuevo</th><th>¿Cambió?</th></tr></thead>
+          <tbody id="csvTbody"></tbody>
+        </table>
+        <button class="btn btn-gold" onclick="applyCSV()">✦ Aplicar Precios a la Tienda</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- DATOS DE LA TIENDA -->
+  <section class="pg" id="pg-ajustes">
+    <div class="pg-head">
+      <div><h1>Datos de la Tienda</h1><p>Información de contacto y configuración</p></div>
+      <button class="btn btn-gold" onclick="saveSettings()">Guardar</button>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Información General</div>
+      <div class="frow">
+        <div class="fg"><label>Nombre de la Tienda</label><input id="s-nombre" value="Fragancia &amp; Estilo"/></div>
+        <div class="fg"><label>Teléfono / WhatsApp</label><input id="s-tel" placeholder="+52 81 1234 5678"/></div>
+      </div>
+      <div class="frow">
+        <div class="fg"><label>Correo electrónico</label><input type="email" id="s-email" placeholder="hola@fraganciayestilo.mx"/></div>
+        <div class="fg"><label>Instagram</label><input id="s-ig" placeholder="@fraganciayestilo"/></div>
+      </div>
+      <div class="fg" style="margin-bottom:14px"><label>Dirección</label>
+        <textarea id="s-dir" rows="2" placeholder="Av. Garza Sada 2501, Monterrey, NL"></textarea>
+      </div>
+      <div class="frow">
+        <div class="fg"><label>Horario Lun–Sáb</label><input id="s-h1" placeholder="10:00 – 20:00"/></div>
+        <div class="fg"><label>Horario Domingo</label><input id="s-h2" placeholder="12:00 – 18:00"/></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTRASEÑA -->
+  <section class="pg" id="pg-seguridad">
+    <div class="pg-head"><div><h1>Contraseña de Acceso</h1><p>Cambia tu usuario y contraseña</p></div></div>
+    <div class="panel">
+      <div class="panel-title">Cambiar Contraseña</div>
+      <div id="secErr" class="alert alert-err"></div>
+      <div id="secOk"  class="alert alert-ok"></div>
+      <div class="frow one">
+        <div class="fg"><label>Contraseña actual *</label><input type="password" id="sec-cur" placeholder="Tu contraseña actual"/></div>
+      </div>
+      <div class="frow">
+        <div class="fg"><label>Nuevo Usuario (opcional)</label><input id="sec-user" placeholder="Dejar vacío para no cambiar"/></div>
+        <div class="fg"></div>
+      </div>
+      <div class="frow">
+        <div class="fg"><label>Nueva Contraseña</label><input type="password" id="sec-p1" placeholder="Mínimo 8 caracteres"/></div>
+        <div class="fg"><label>Confirmar Nueva Contraseña</label><input type="password" id="sec-p2" placeholder="Repite la nueva contraseña"/></div>
+      </div>
+      <button class="btn btn-gold" onclick="changePassword()">◉ Guardar Cambios</button>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Cerrar Sesión</div>
+      <p style="font-size:.78rem;color:var(--gray-lt);margin-bottom:16px;line-height:1.8">
+        Cierra esta sesión. Tendrás que volver a entrar con tu usuario y contraseña.
+      </p>
+      <button class="btn btn-danger" onclick="doLogout()">✕ Cerrar Sesión Ahora</button>
+    </div>
+  </section>
+
+</main>
+</div><!-- end shell -->
+
+<!-- ══ EDIT MODAL ══ -->
+<div class="modal-bg" id="editModal">
+  <div class="modal-box">
+    <div class="modal-hd"><h3>Editar Producto</h3><button class="modal-close" onclick="closeEdit()">✕</button></div>
+    <div id="editAlert" class="alert alert-err"></div>
+    <div class="frow">
+      <div class="fg"><label>Marca</label><input id="e-marca"/></div>
+      <div class="fg"><label>Nombre</label><input id="e-nombre"/></div>
+    </div>
+    <div class="frow three">
+      <div class="fg"><label>ml</label>
+        <select id="e-ml">
+          <option value="30">30</option><option value="50">50</option>
+          <option value="75">75</option><option value="100">100</option>
+          <option value="125">125</option><option value="150">150</option>
+          <option value="200">200</option>
+        </select>
+      </div>
+      <div class="fg"><label>Precio (USD)</label><input type="number" id="e-precio" step="0.01"/></div>
+      <div class="fg"><label>Precio anterior</label><input type="number" id="e-prev" step="0.01"/></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Colección</label>
+        <select id="e-cat">
+          <option value="mujer">Para Ella</option><option value="hombre">Para Él</option>
+          <option value="unisex">Unisex</option><option value="noche">Noche</option>
+        </select>
+      </div>
+      <div class="fg"><label>Temporada</label>
+        <select id="e-temp">
+          <option value="todos">Todo el año</option>
+          <option value="primavera-verano">Primavera · Verano</option>
+          <option value="otono-invierno">Otoño · Invierno</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg" style="margin-bottom:14px"><label>Descripción</label><textarea id="e-desc" rows="3"></textarea></div>
+    <div class="frow">
+      <div class="fg" style="flex-direction:row;align-items:center;gap:16px;flex-wrap:wrap">
+        <div class="cb-row"><input type="checkbox" id="e-disp"/><span>Publicado en la tienda</span></div>
+        <div class="cb-row"><input type="checkbox" id="e-oferta"/><span>Etiqueta Oferta</span></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button class="btn btn-gold" onclick="saveEdit()">Guardar Cambios</button>
+      <button class="btn btn-outline" onclick="closeEdit()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SETUP WIZARD ══ -->
+<div class="wizard" id="wizard">
+  <div class="wiz-box">
+    <div class="wiz-progress" id="wizProg"></div>
+
+    <!-- Step 1: Bienvenida -->
+    <div class="wiz-step active" id="ws-1">
+      <div class="wiz-num">Configuración inicial · Paso 1 de 3</div>
+      <h2 class="wiz-title">¡Bienvenido al Panel!</h2>
+      <div class="wiz-body">
+        <p>Para que los productos que des de alta aparezcan automáticamente en tu tienda <strong>sin necesidad de tocar ningún archivo</strong>, necesitamos conectar el panel a un servicio gratuito de almacenamiento en la nube.</p>
+        <p style="margin-top:12px">Este proceso solo se hace <strong>una sola vez</strong> y tarda aproximadamente <strong>3 minutos</strong>.</p>
+      </div>
+      <button class="btn btn-gold" onclick="wizNext(2)">Comenzar →</button>
+    </div>
+
+    <!-- Step 2: Crear cuenta JSONBin -->
+    <div class="wiz-step" id="ws-2">
+      <div class="wiz-num">Configuración inicial · Paso 2 de 3</div>
+      <h2 class="wiz-title">Crear cuenta gratuita en JSONBin</h2>
+      <div class="wiz-body">
+        <div class="steps-visual">
+          <div class="sv-item">
+            <div class="sv-num">1</div>
+            <div class="sv-text">
+              <strong>Abre una nueva pestaña</strong>
+              <p>Ve a <code>jsonbin.io</code> y haz clic en <strong>Sign Up Free</strong></p>
+            </div>
+          </div>
+          <div class="sv-item">
+            <div class="sv-num">2</div>
+            <div class="sv-text">
+              <strong>Regístrate con tu correo</strong>
+              <p>Usa cualquier correo electrónico. Confirma tu cuenta si te llega un email de verificación.</p>
+            </div>
+          </div>
+          <div class="sv-item">
+            <div class="sv-num">3</div>
+            <div class="sv-text">
+              <strong>Obtén tu API Key</strong>
+              <p>Una vez dentro de JSONBin, haz clic en tu nombre (arriba a la derecha) → <strong>API Keys</strong> → copia la clave que empieza con <code>$2b$…</code></p>
+            </div>
+          </div>
+          <div class="sv-item">
+            <div class="sv-num">4</div>
+            <div class="sv-text">
+              <strong>Pega la clave aquí abajo</strong>
+              <p>Esa clave larga es tu "llave maestra". Guárdala también en un lugar seguro (en tus notas del teléfono, por ejemplo).</p>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:24px">
+          <label>Tu API Key de JSONBin *</label>
+          <input type="text" id="wiz-apikey" placeholder="$2b$10$...tu clave aquí..." style="margin-top:6px;font-size:.78rem"/>
+        </div>
+        <div id="wizErr" class="alert alert-err" style="margin-top:12px"></div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-gold" id="wizConnectBtn" onclick="wizConnect()">Conectar y Continuar →</button>
+        <button class="btn btn-outline" onclick="wizNext(1)">← Atrás</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Un paso más — descargar config.js -->
+    <div class="wiz-step" id="ws-3">
+      <div class="wiz-num">Configuración inicial · Paso 3 de 3</div>
+      <h2 class="wiz-title">¡Casi listo! Un paso más</h2>
+      <div class="wiz-body">
+        <p>La conexión con JSONBin funciona correctamente. Ahora necesitas hacer <strong>una acción de un minuto</strong> para que los productos sean visibles para todos tus clientes:</p>
+
+        <div id="wiz-binid-box" style="display:none;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.25);padding:16px;margin:20px 0">
+          <p style="font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-lt);margin-bottom:6px">Tu ID de almacenamiento (guárdalo):</p>
+          <code id="wiz-binid-display" style="color:var(--gold);font-size:.85rem;word-break:break-all"></code>
+        </div>
+
+        <div class="steps-visual" style="margin-top:16px">
+          <div class="sv-item">
+            <div class="sv-num">1</div>
+            <div class="sv-text">
+              <strong>Descarga el archivo de configuración</strong>
+              <p>Haz clic en el botón de abajo. Se descargará un archivo llamado <code>config.js</code></p>
+            </div>
+          </div>
+          <div class="sv-item">
+            <div class="sv-num">2</div>
+            <div class="sv-text">
+              <strong>Reemplaza el archivo en tu proyecto</strong>
+              <p>En VSCode, busca la carpeta <code>data/</code> y reemplaza el archivo <code>config.js</code> con el que acabas de descargar.</p>
+            </div>
+          </div>
+          <div class="sv-item">
+            <div class="sv-num">3</div>
+            <div class="sv-text">
+              <strong>Sube el cambio a GitHub</strong>
+              <p>Abre la Terminal en VSCode y escribe exactamente esto, presionando Enter después de cada línea:</p>
+              <code>git add .</code><br/>
+              <code>git commit -m "Configurar base de datos"</code><br/>
+              <code>git push</code>
+            </div>
+          </div>
+          <div class="sv-item">
+            <div class="sv-num">✦</div>
+            <div class="sv-text">
+              <strong>¡Listo para siempre!</strong>
+              <p>Después de esto, cada producto que publiques aparecerá automáticamente en la tienda sin hacer nada más. Este paso de 3 líneas solo se hace <strong>una vez</strong>.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <button class="btn btn-gold" onclick="downloadWizConfig()">⬇ Descargar config.js</button>
+        <button class="btn btn-outline" onclick="wizFinish()">Ya lo hice → Entrar al Panel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LOADER ══ -->
+<div class="loader" id="loader">
+  <div class="spin"></div>
+  <p id="loaderMsg">Guardando…</p>
+</div>
+
+<!-- ══ TOAST ══ -->
+<div class="toast" id="toast"></div>
+
+<!-- ══ SCRIPTS ══ -->
+<script src="../data/config.js"></script>
+  <script src="../js/db.js"></script>
+<script>
+// ════════════════════════════════════════════════════════
+//  ADMIN PANEL SCRIPT — Fragancia & Estilo
+// ════════════════════════════════════════════════════════
+
+let PRODUCTS = [];
+let editingId = null;
+let csvData   = [];
+let imgFiles  = []; // archivos de imagen seleccionados
+
+// ── Navegación ──────────────────────────────────────────
+function go(id) {
+  document.querySelectorAll('.pg').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('pg-' + id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.textContent.toLowerCase().includes(id === 'nuevo' ? 'agregar' : id.substring(0,5))) {
+      n.classList.add('active');
+    }
+  });
+  if (id === 'dashboard') renderDash();
+  if (id === 'productos')  renderProdTable();
+  if (id === 'precios')    renderPricesTable();
+}
+
+// ── Sesión ───────────────────────────────────────────────
+function initSession() {
+  const s = localStorage.getItem('fye_session');
+  if (!s) { location.replace('./login.html'); return; }
+  try {
+    const { user, expiry } = JSON.parse(s);
+    if (Date.now() >= expiry) {
+      localStorage.removeItem('fye_session');
+      location.replace('./login.html?expired=1');
+      return;
+    }
+    document.getElementById('sbarUser').textContent = user;
+    updateTimer(expiry);
+    setInterval(() => {
+      if (Date.now() >= expiry) {
+        localStorage.removeItem('fye_session');
+        location.replace('./login.html?expired=1');
+      }
+      updateTimer(expiry);
+    }, 30000);
+  } catch(e) { location.replace('./login.html'); }
+}
+function updateTimer(exp) {
+  const r = Math.max(0, exp - Date.now());
+  const h = Math.floor(r / 3600000);
+  const m = Math.floor((r % 3600000) / 60000);
+  const el = document.getElementById('sbarTimer');
+  if (el) el.textContent = h + 'h ' + m + 'm';
+}
+function doLogout() {
+  if (!confirm('¿Cerrar sesión?')) return;
+  localStorage.removeItem('fye_session');
+  location.replace('./login.html');
+}
+
+// ── Wizard ───────────────────────────────────────────────
+function wizNext(n) {
+  document.querySelectorAll('.wiz-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('ws-' + n).classList.add('active');
+  const dots = document.getElementById('wizProg');
+  dots.innerHTML = [1,2,3].map(i =>
+    `<div class="wiz-dot ${i <= n ? 'done' : ''}"></div>`).join('');
+}
+
+async function wizConnect() {
+  const key = document.getElementById('wiz-apikey').value.trim();
+  const errEl = document.getElementById('wizErr');
+  errEl.classList.remove('show');
+  if (!key || key.length < 20) {
+    errEl.textContent = '⚠ Pega tu API Key completa (empieza con $2b$…)';
+    errEl.classList.add('show'); return;
+  }
+  showLoader('Conectando con JSONBin…');
+  try {
+    const binId = await DB.createBin(key, []);
+    DB.saveConfig(binId, key);
+    hideLoader();
+    // Actualizar el paso 3 con el binId para mostrarlo
+    document.getElementById('wiz-binid-display').textContent = binId;
+    document.getElementById('wiz-binid-box').style.display = 'block';
+    wizNext(3);
+  } catch(e) {
+    hideLoader();
+    errEl.textContent = '⚠ ' + e.message + ' — Verifica que la API Key sea correcta.';
+    errEl.classList.add('show');
+  }
+}
+
+function downloadWizConfig() {
+  const binId = DB.getBinId();
+  if (!binId) { toast('⚠ No se encontró el ID de configuración.', true); return; }
+  DB.downloadConfigFile(binId);
+  toast('✦ config.js descargado — Reemplaza data/config.js en tu proyecto y sube a GitHub');
+}
+
+function wizFinish() {
+  document.getElementById('wizard').classList.add('hidden');
+  loadAndRenderDash();
+}
+
+// ── Loader ───────────────────────────────────────────────
+function showLoader(msg = 'Guardando…') {
+  document.getElementById('loaderMsg').textContent = msg;
+  document.getElementById('loader').classList.add('show');
+}
+function hideLoader() { document.getElementById('loader').classList.remove('show'); }
+
+// ── Toast ────────────────────────────────────────────────
+function toast(msg, isErr = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = isErr ? 'var(--red-tx)' : 'var(--gold)';
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ── Cargar productos ─────────────────────────────────────
+async function loadProds() {
+  showLoader('Cargando productos…');
+  PRODUCTS = await DB.getProducts();
+  hideLoader();
+}
+
+async function refreshAll() {
+  await loadProds();
+  renderDash();
+  toast('✦ Catálogo actualizado');
+}
+
+// ── Dashboard ────────────────────────────────────────────
+function renderDash() {
+  const total    = PRODUCTS.length;
+  const activos  = PRODUCTS.filter(p => p.disponible !== false).length;
+  const ofertas  = PRODUCTS.filter(p => p.oferta).length;
+  const avg      = total ? (PRODUCTS.reduce((s,p) => s + +p.precio, 0) / total).toFixed(2) : '0.00';
+  document.getElementById('stats').innerHTML = `
+    <div class="stat"><div class="stat-val">${total}</div><div class="stat-lbl">Total productos</div></div>
+    <div class="stat"><div class="stat-val">${activos}</div><div class="stat-lbl">Publicados</div></div>
+    <div class="stat"><div class="stat-val">${ofertas}</div><div class="stat-lbl">En oferta</div></div>
+    <div class="stat"><div class="stat-val">$${avg}</div><div class="stat-lbl">Precio promedio</div></div>`;
+  document.getElementById('dashTbody').innerHTML = PRODUCTS.slice().reverse().slice(0,8).map(rowHtml).join('')
+    || '<tr><td colspan="6" style="text-align:center;color:var(--gray-lt);padding:40px">Aún no tienes productos. ¡Da de alta el primero!</td></tr>';
+}
+
+async function loadAndRenderDash() {
+  await loadProds();
+  renderDash();
+}
+
+function rowHtml(p) {
+  const img = p.imagen
+    ? `<img class="tbl-thumb" src="${p.imagen}" onerror="this.style.display='none'">`
+    : `<div class="tbl-thumb-ph">✦</div>`;
+  return `<tr>
+    <td>${img}</td>
+    <td><div class="pname"><div class="brand">${p.marca}</div><div class="name">${p.nombre} · ${p.ml}ml</div></div></td>
+    <td style="color:var(--gray-lt);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em">${p.categoria}</td>
+    <td class="price-cell">$${(+p.precio).toFixed(2)}</td>
+    <td>
+      <span class="pill ${p.disponible !== false ? 'pill-ok' : 'pill-off'}">${p.disponible !== false ? 'Publicado' : 'Oculto'}</span>
+      ${p.oferta ? '<span class="pill pill-offer" style="margin-left:4px">Oferta</span>' : ''}
+    </td>
+    <td class="acts">
+      <button class="btn btn-outline btn-xs" onclick="openEdit('${p.id}')">✎</button>
+      <button class="btn btn-danger btn-xs" onclick="delProduct('${p.id}')">✕</button>
+    </td>
+  </tr>`;
+}
+
+function renderProdTable() {
+  document.getElementById('prodTbody').innerHTML =
+    PRODUCTS.length ? PRODUCTS.slice().reverse().map(rowHtml).join('')
+    : '<tr><td colspan="6" style="text-align:center;color:var(--gray-lt);padding:40px">No hay productos aún.</td></tr>';
+}
+
+// ── Imagen: preview y conversión a base64 ────────────────
+function handleImgs(input) {
+  const grid = document.getElementById('imgGrid');
+  Array.from(input.files).forEach((file, i) => {
+    if (file.size > 1.5 * 1024 * 1024) {
+      toast('⚠ La foto "' + file.name + '" es mayor a 1.5 MB. Usa una foto más pequeña.', true);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      imgFiles.push({ name: file.name, dataUrl: e.target.result });
+      const idx = imgFiles.length - 1;
+      const div = document.createElement('div');
+      div.className = 'img-item';
+      div.id = 'img-' + idx;
+      div.innerHTML = `
+        <img src="${e.target.result}" alt="preview"/>
+        ${idx === 0 ? '<span class="img-main-tag">PRINCIPAL</span>' : ''}
+        <button class="img-del" onclick="removeImg(${idx})">✕</button>`;
+      grid.appendChild(div);
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+
+function removeImg(idx) {
+  imgFiles.splice(idx, 1);
+  const el = document.getElementById('img-' + idx);
+  if (el) el.remove();
+  // Re-marcar la primera como PRINCIPAL
+  document.querySelectorAll('.img-main-tag').forEach(t => t.remove());
+  const firstItem = document.querySelector('.img-item');
+  if (firstItem) {
+    const tag = document.createElement('span');
+    tag.className = 'img-main-tag'; tag.textContent = 'PRINCIPAL';
+    firstItem.appendChild(tag);
+  }
+}
+
+// ── Guardar Producto ─────────────────────────────────────
+async function saveProduct() {
+  const errEl = document.getElementById('fAlert');
+  const okEl  = document.getElementById('fOk');
+  errEl.classList.remove('show'); okEl.classList.remove('show');
+
+  const marca  = document.getElementById('f-marca').value.trim();
+  const nombre = document.getElementById('f-nombre').value.trim();
+  const ml     = document.getElementById('f-ml').value;
+  const cat    = document.getElementById('f-cat').value;
+  const precio = parseFloat(document.getElementById('f-precio').value);
+
+  if (!marca)  { showErr(errEl, 'Escribe la Marca del perfume.'); return; }
+  if (!nombre) { showErr(errEl, 'Escribe el Nombre del perfume.'); return; }
+  if (!ml)     { showErr(errEl, 'Selecciona el Tamaño (ml).'); return; }
+  if (!cat)    { showErr(errEl, 'Selecciona la Colección.'); return; }
+  if (!precio || precio <= 0) { showErr(errEl, 'Escribe un Precio válido mayor a 0.'); return; }
+
+  const imagen = imgFiles.length > 0 ? imgFiles[0].dataUrl : '';
+
+  const prod = {
+    id:             'p' + Date.now(),
+    nombre, marca,
+    ml:             parseInt(ml),
+    precio,
+    precio_anterior: parseFloat(document.getElementById('f-prev').value) || null,
+    imagen,
+    categoria:      cat,
+    temporada:      document.getElementById('f-temp').value || 'todos',
+    descripcion:    document.getElementById('f-desc').value.trim(),
+    oferta:         document.getElementById('f-oferta').checked,
+    disponible:     document.getElementById('f-disp').checked
+  };
+
+  showLoader('Publicando producto…');
+  try {
+    PRODUCTS.push(prod);
+    await DB.saveProducts(PRODUCTS);
+    hideLoader();
+    okEl.textContent = '✦ ¡Producto "' + nombre + '" publicado en la tienda exitosamente!';
+    okEl.classList.add('show');
+    resetForm();
+    window.scrollTo(0, 0);
+    toast('✦ Producto publicado: ' + nombre);
+    showSyncBanner();
+  } catch(e) {
+    PRODUCTS.pop();
+    hideLoader();
+    showErr(errEl, 'Error al guardar: ' + e.message);
+  }
+}
+
+function showErr(el, msg) {
+  el.textContent = '⚠ ' + msg;
+  el.classList.add('show');
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function resetForm() {
+  ['f-marca','f-nombre','f-precio','f-prev','f-desc'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('f-ml').value   = '';
+  document.getElementById('f-cat').value  = '';
+  document.getElementById('f-temp').value = 'todos';
+  document.getElementById('f-oferta').checked = false;
+  document.getElementById('f-disp').checked   = true;
+  document.getElementById('imgGrid').innerHTML = '';
+  document.getElementById('fAlert').classList.remove('show');
+  document.getElementById('fOk').classList.remove('show');
+  imgFiles = [];
+  editingId = null;
+  document.getElementById('formHeading').textContent = 'Agregar Producto';
+  document.getElementById('saveBtn').textContent = '✦ Publicar Producto';
+}
+
+// ── Eliminar ──────────────────────────────────────────────
+async function delProduct(id) {
+  const p = PRODUCTS.find(x => x.id === id);
+  if (!p) return;
+  if (!confirm(`¿Eliminar "${p.nombre}"?\n\nEsta acción no se puede deshacer.`)) return;
+  showLoader('Eliminando…');
+  PRODUCTS = PRODUCTS.filter(x => x.id !== id);
+  try {
+    await DB.saveProducts(PRODUCTS);
+    hideLoader();
+    renderDash();
+    renderProdTable();
+    toast('Producto eliminado');
+  } catch(e) {
+    hideLoader();
+    toast('⚠ Error al eliminar: ' + e.message, true);
+  }
+}
+
+// ── Editar ────────────────────────────────────────────────
+function openEdit(id) {
+  const p = PRODUCTS.find(x => x.id === id);
+  if (!p) return;
+  editingId = id;
+  document.getElementById('e-marca').value  = p.marca;
+  document.getElementById('e-nombre').value = p.nombre;
+  document.getElementById('e-ml').value     = p.ml;
+  document.getElementById('e-precio').value = p.precio;
+  document.getElementById('e-prev').value   = p.precio_anterior || '';
+  document.getElementById('e-cat').value    = p.categoria;
+  document.getElementById('e-temp').value   = p.temporada || 'todos';
+  document.getElementById('e-desc').value   = p.descripcion || '';
+  document.getElementById('e-disp').checked  = p.disponible !== false;
+  document.getElementById('e-oferta').checked = !!p.oferta;
+  document.getElementById('editAlert').classList.remove('show');
+  document.getElementById('editModal').classList.add('open');
+}
+function closeEdit() {
+  document.getElementById('editModal').classList.remove('open');
+  editingId = null;
+}
+
+async function saveEdit() {
+  const p = PRODUCTS.find(x => x.id === editingId);
+  if (!p) return;
+  const errEl = document.getElementById('editAlert');
+  const precio = parseFloat(document.getElementById('e-precio').value);
+  if (!precio || precio <= 0) {
+    errEl.textContent = '⚠ El precio debe ser mayor a 0.';
+    errEl.classList.add('show'); return;
+  }
+  p.marca            = document.getElementById('e-marca').value.trim();
+  p.nombre           = document.getElementById('e-nombre').value.trim();
+  p.ml               = parseInt(document.getElementById('e-ml').value);
+  p.precio           = precio;
+  p.precio_anterior  = parseFloat(document.getElementById('e-prev').value) || null;
+  p.categoria        = document.getElementById('e-cat').value;
+  p.temporada        = document.getElementById('e-temp').value;
+  p.descripcion      = document.getElementById('e-desc').value;
+  p.disponible       = document.getElementById('e-disp').checked;
+  p.oferta           = document.getElementById('e-oferta').checked;
+
+  showLoader('Guardando cambios…');
+  try {
+    await DB.saveProducts(PRODUCTS);
+    hideLoader();
+    closeEdit();
+    renderProdTable();
+    renderDash();
+    toast('✦ Producto actualizado');
+    showSyncBanner();
+  } catch(e) {
+    hideLoader();
+    errEl.textContent = '⚠ Error: ' + e.message;
+    errEl.classList.add('show');
+  }
+}
+
+// ── Precios ───────────────────────────────────────────────
+function renderPricesTable() {
+  document.getElementById('pricesTbody').innerHTML = PRODUCTS.map(p => `
+    <tr>
+      <td><div class="pname"><div class="name" style="font-family:var(--font-d)">${p.nombre}</div></div></td>
+      <td style="color:var(--gold);font-size:.72rem;letter-spacing:.1em">${p.marca}</td>
+      <td style="color:var(--gray-lt)">${p.ml}ml</td>
+      <td>
+        <input class="price-input" type="number" value="${p.precio}" step="0.01" min="0"
+          data-id="${p.id}" data-field="precio"
+          oninput="this.classList.add('price-changed');document.getElementById('savePricesBtn').disabled=false"/>
+      </td>
+      <td>
+        <input class="price-input" type="number" value="${p.precio_anterior||''}" step="0.01" min="0"
+          placeholder="—" data-id="${p.id}" data-field="precio_anterior"
+          oninput="this.classList.add('price-changed');document.getElementById('savePricesBtn').disabled=false"/>
+      </td>
+      <td>
+        <input type="checkbox" ${p.oferta ? 'checked' : ''}
+          data-id="${p.id}" data-field="oferta" style="width:auto;padding:0"
+          onchange="document.getElementById('savePricesBtn').disabled=false"/>
+      </td>
+    </tr>`).join('') ||
+    '<tr><td colspan="6" style="text-align:center;color:var(--gray-lt);padding:40px">No hay productos aún.</td></tr>';
+  document.getElementById('savePricesBtn').disabled = true;
+}
+
+async function savePrices() {
+  document.querySelectorAll('#pricesTbody input[data-field="precio"]').forEach(inp => {
+    const p = PRODUCTS.find(x => x.id === inp.dataset.id);
+    if (p && inp.value) p.precio = parseFloat(inp.value);
+  });
+  document.querySelectorAll('#pricesTbody input[data-field="precio_anterior"]').forEach(inp => {
+    const p = PRODUCTS.find(x => x.id === inp.dataset.id);
+    if (p) p.precio_anterior = inp.value ? parseFloat(inp.value) : null;
+  });
+  document.querySelectorAll('#pricesTbody input[data-field="oferta"]').forEach(inp => {
+    const p = PRODUCTS.find(x => x.id === inp.dataset.id);
+    if (p) p.oferta = inp.checked;
+  });
+  showLoader('Actualizando precios…');
+  try {
+    await DB.saveProducts(PRODUCTS);
+    hideLoader();
+    toast('✦ Precios actualizados en la tienda');
+    showSyncBanner();
+    document.getElementById('savePricesBtn').disabled = true;
+    document.querySelectorAll('.price-changed').forEach(el => el.classList.remove('price-changed'));
+  } catch(e) {
+    hideLoader();
+    const errEl = document.getElementById('pricesAlert');
+    errEl.textContent = '⚠ Error al guardar: ' + e.message;
+    errEl.classList.add('show');
+  }
+}
+
+// ── CSV ───────────────────────────────────────────────────
+function downloadCSV() {
+  const hdr = 'id,nombre,marca,ml,precio,precio_anterior,categoria,temporada,oferta,disponible';
+  const rows = PRODUCTS.map(p =>
+    `"${p.id}","${p.nombre}","${p.marca}","${p.ml}","${p.precio}","${p.precio_anterior||''}","${p.categoria}","${p.temporada||''}","${p.oferta}","${p.disponible !== false}"`
+  );
+  const blob = new Blob(['\uFEFF' + [hdr,...rows].join('\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'catalogo-fragancia-estilo.csv'; a.click();
+}
+
+function handleCSV(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const lines = e.target.result.split('\n').filter(l => l.trim());
+    const hdrs = lines[0].split(',').map(h => h.replace(/"/g,'').trim());
+    csvData = lines.slice(1).map(line => {
+      const vals = line.split(',').map(v => v.replace(/"/g,'').trim());
+      const obj = {}; hdrs.forEach((h,i) => obj[h] = vals[i]||''); return obj;
+    }).filter(r => r.id);
+    const tbody = document.getElementById('csvTbody');
+    let changes = 0;
+    tbody.innerHTML = csvData.map(row => {
+      const cur = PRODUCTS.find(p => p.id === row.id);
+      const curP = cur ? (+cur.precio).toFixed(2) : '—';
+      const newP = row.precio ? (+row.precio).toFixed(2) : '—';
+      const changed = cur && curP !== newP;
+      if (changed) changes++;
+      return `<tr style="${changed ? 'color:var(--gold)' : ''}">
+        <td>${cur ? cur.nombre : row.nombre || row.id}</td>
+        <td>$${curP}</td>
+        <td>$${newP}</td>
+        <td>${changed ? '⬆ Cambia' : '—'}</td>
+      </tr>`;
+    }).join('');
+    document.getElementById('csvInfo').textContent = `Se detectaron ${changes} cambio(s) de precio en ${csvData.length} producto(s).`;
+    document.getElementById('csvPreview').style.display = 'block';
+  };
+  reader.readAsText(file, 'UTF-8');
+  input.value = '';
+}
+
+async function applyCSV() {
+  let count = 0;
+  csvData.forEach(row => {
+    const p = PRODUCTS.find(x => x.id === row.id);
+    if (!p || !row.precio) return;
+    p.precio = parseFloat(row.precio); count++;
+    if (row.precio_anterior) p.precio_anterior = parseFloat(row.precio_anterior);
+    if (row.oferta !== undefined) p.oferta = row.oferta === 'true' || row.oferta === '1';
+    if (row.disponible !== undefined) p.disponible = row.disponible === 'true' || row.disponible === '1';
+  });
+  showLoader('Aplicando cambios…');
+  try {
+    await DB.saveProducts(PRODUCTS);
+    hideLoader();
+    document.getElementById('csvPreview').style.display = 'none';
+    document.getElementById('csvFile').value = '';
+    toast(`✦ ${count} productos actualizados en la tienda`);
+  } catch(e) { hideLoader(); toast('⚠ Error: ' + e.message, true); }
+}
+
+// ── Ajustes ───────────────────────────────────────────────
+function saveSettings() {
+  const s = {
+    nombre: document.getElementById('s-nombre').value,
+    tel:    document.getElementById('s-tel').value,
+    email:  document.getElementById('s-email').value,
+    ig:     document.getElementById('s-ig').value,
+    dir:    document.getElementById('s-dir').value,
+    h1:     document.getElementById('s-h1').value,
+    h2:     document.getElementById('s-h2').value,
+  };
+  localStorage.setItem('fye_settings', JSON.stringify(s));
+  toast('✦ Ajustes guardados');
+}
+function loadSettings() {
+  const s = JSON.parse(localStorage.getItem('fye_settings') || '{}');
+  if (s.nombre) document.getElementById('s-nombre').value = s.nombre;
+  if (s.tel)    document.getElementById('s-tel').value    = s.tel;
+  if (s.email)  document.getElementById('s-email').value  = s.email;
+  if (s.ig)     document.getElementById('s-ig').value     = s.ig;
+  if (s.dir)    document.getElementById('s-dir').value    = s.dir;
+  if (s.h1)     document.getElementById('s-h1').value     = s.h1;
+  if (s.h2)     document.getElementById('s-h2').value     = s.h2;
+}
+
+// ── Contraseña ────────────────────────────────────────────
+async function hashStr(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function changePassword() {
+  const cur   = document.getElementById('sec-cur').value;
+  const newU  = document.getElementById('sec-user').value.trim();
+  const p1    = document.getElementById('sec-p1').value;
+  const p2    = document.getElementById('sec-p2').value;
+  const errEl = document.getElementById('secErr');
+  const okEl  = document.getElementById('secOk');
+  errEl.classList.remove('show'); okEl.classList.remove('show');
+  if (!cur) { errEl.textContent='⚠ Ingresa tu contraseña actual.'; errEl.classList.add('show'); return; }
+  const saved = localStorage.getItem('fye_credentials');
+  let vUser, vHash;
+  if (saved) { const p=JSON.parse(saved); vUser=p.user; vHash=p.passwordHash; }
+  else { vUser='admin'; vHash=await hashStr('Fragancia2024!'); }
+  if (await hashStr(cur) !== vHash) {
+    errEl.textContent='⚠ La contraseña actual es incorrecta.'; errEl.classList.add('show'); return;
+  }
+  let fUser = newU || vUser;
+  let fHash = vHash;
+  if (p1||p2) {
+    if (p1 !== p2) { errEl.textContent='⚠ Las contraseñas nuevas no coinciden.'; errEl.classList.add('show'); return; }
+    if (p1.length < 8) { errEl.textContent='⚠ La contraseña debe tener al menos 8 caracteres.'; errEl.classList.add('show'); return; }
+    fHash = await hashStr(p1);
+  }
+  localStorage.setItem('fye_credentials', JSON.stringify({ user:fUser, passwordHash:fHash }));
+  const sess = JSON.parse(localStorage.getItem('fye_session')||'{}');
+  sess.user = fUser;
+  localStorage.setItem('fye_session', JSON.stringify(sess));
+  document.getElementById('sbarUser').textContent = fUser;
+  ['sec-cur','sec-user','sec-p1','sec-p2'].forEach(id => document.getElementById(id).value='');
+  okEl.textContent='✦ Credenciales actualizadas. Nuevo usuario: "' + fUser + '"';
+  okEl.classList.add('show');
+}
+
+// ── Sync Banner ──────────────────────────────────────────
+function showSyncBanner() {
+  document.getElementById('syncBanner').classList.add('show');
+}
+
+// ── INIT ─────────────────────────────────────────────────
+initSession();
+loadSettings();
+if (!DB.isConfigured()) {
+  document.getElementById('wizard').classList.remove('hidden');
+  wizNext(1);
+} else {
+  document.getElementById('wizard').classList.add('hidden');
+  loadAndRenderDash();
+}
+</script>
+</body>
+</html>

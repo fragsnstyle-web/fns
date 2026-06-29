@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pedido Confirmado — Fragancia &amp; Estilo</title>
+  <link rel="stylesheet" href="../css/global.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
+  <style>
+    body { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:40px 24px }
+    .confirm-box { max-width:480px; width:100% }
+    .confirm-icon { font-size:3rem; color:var(--gold); margin-bottom:24px; animation:pop .5s cubic-bezier(.34,1.56,.64,1) both }
+    @keyframes pop { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+    .confirm-box h1 { font-family:var(--font-display); font-size:2.5rem; color:var(--cream); margin-bottom:12px }
+    .confirm-box p { font-size:.82rem; color:var(--gray-lt); line-height:1.9; margin-bottom:24px }
+    .order-id { font-size:.7rem; letter-spacing:.15em; color:var(--gold-dk); margin-bottom:36px }
+    .confirm-actions { display:flex; gap:12px; justify-content:center; flex-wrap:wrap }
+    .divider-line { width:60px; height:1px; background:linear-gradient(90deg,transparent,var(--gold-dk),transparent); margin:24px auto }
+  </style>
+</head>
+<body>
+  <div class="confirm-box">
+    <div class="confirm-icon">✦</div>
+    <h1>¡Gracias por tu compra!</h1>
+    <div class="divider-line"></div>
+    <p id="confirmMsg">Tu pedido ha sido recibido. Te enviaremos una confirmación a tu correo electrónico en breve.</p>
+    <p class="order-id" id="orderIdEl"></p>
+    <div class="confirm-actions">
+      <a href="tienda.html" class="btn-gold">Seguir comprando</a>
+      <a href="../index.html" class="btn-ghost">Ir al inicio</a>
+    </div>
+  </div>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const orderId = params.get('order');
+    const method  = params.get('method');
+
+    if (orderId) {
+      document.getElementById('orderIdEl').textContent = 'Número de pedido: ' + orderId;
+    }
+
+    const msgs = {
+      stripe:      'Tu pago con tarjeta fue procesado exitosamente. Recibirás un correo de confirmación.',
+      paypal:      'Tu pago con PayPal fue completado exitosamente. Recibirás un correo de confirmación.',
+      mercadopago: 'Tu pago fue procesado por Mercado Pago. Recibirás confirmación en tu correo.',
+      bank:        'Recibimos tu solicitud. Confirmaremos tu pago dentro de 24 horas hábiles una vez que verifiquemos tu transferencia.'
+    };
+
+    if (method && msgs[method]) {
+      document.getElementById('confirmMsg').textContent = msgs[method];
+    }
+  </script>
+</body>
+</html>
